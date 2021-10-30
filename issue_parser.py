@@ -22,7 +22,6 @@ for issue in issues:
             "Updated_at" : issue['updated_at'],
             "URL"        : issue['url'],
             "user"       : issue['user'],
-            "Milestone"  : issue['milestone'],
             "Node_id"    : issue['node_id'],
             "Labels"     : issue['labels']
         },
@@ -37,16 +36,26 @@ for issue in issues:
     body = issue['body']
     
     try:
-        if "TYPE:TASK" in body:
-            issue_dataframe.at[issue['number'], 'Type'] = 'Task'
+        issue_dataframe.at[issue['number'], 'Milestone'] = issue['milestone']['title']
+    except:
+        pass
+    
+    try:
+        if issue['labels'][0]['name'] == "task":
             issue_dataframe.at[issue['number'], 'In_story'] = (
                 body[body.find("EPIC:'") + 6 : body.find("'", body.find("EPIC:'") + 7)]
             )
-        elif "TYPE:TEST" in body:
-            issue_dataframe.at[issue['number'], 'Type'] = 'Test'
+        elif issue['labels'][0]['name'] == "story test":
             issue_dataframe.at[issue['number'], 'In_story'] = (
                 body[body.find("EPIC:'") + 6 : body.find("'", body.find("EPIC:'") + 7)]
             )
+    except:
+        pass
+    try:
+        if "EPIC:'" in body:
+            issue_dataframe.at[issue['number'], "Body"] = (
+                body[0 : body.find("EPIC:'")]    
+            ).replace("TYPE:TASK", "")
     except:
         pass
 
@@ -61,6 +70,7 @@ issue_dataframe[[
         "State",
         "Updated_at",
         "URL",
-        "Node_id"
+        "Node_id",
+        "Milestone"
     ]].to_excel("./FAM_issue_list.xlsx")
 
