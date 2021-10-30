@@ -3,12 +3,12 @@ import json
 import requests
 
 
-response = requests.get('https://api.github.com/repos/UCSD-CSE-210-2021/cse-210-team-project-fam/issues')
+response = requests.get('https://api.github.com/repos/UCSD-CSE-210-2021/cse-210-team-project-fam/issues?per_page=100')
 issues = response.json()
 
 issue_dataframe = pd.DataFrame(columns = {
     "Number", "Title", "Body", "Comments", "State", "Updated_at", "URL", "user",
-    "Milestone", "Node_id", "Labels", "Updated_at"
+    "Milestone", "Node_id", "Labels", "Updated_at", "Type"
     })
 
 for issue in issues:
@@ -28,12 +28,19 @@ for issue in issues:
         },
         ignore_index = True
     )
+    issue_dataframe.set_index(issue_dataframe.Number, inplace = True)
+    try:
+        issue_dataframe.at[issue['number'], 'Type'] = issue['labels'][0]['name']
+    except:
+        issue_dataframe.at[issue['number'], 'Type'] = 'Task'
     
+
 
 issue_dataframe[[
         "Number",
         "Title",
         "Body",
+        "Type",
         "Comments",
         "State",
         "Updated_at",
