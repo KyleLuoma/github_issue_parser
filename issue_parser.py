@@ -8,7 +8,7 @@ issues = response.json()
 
 issue_dataframe = pd.DataFrame(columns = {
     "Number", "Title", "Body", "Comments", "State", "Updated_at", "URL", "user",
-    "Milestone", "Node_id", "Labels", "Updated_at", "Type"
+    "Milestone", "Node_id", "Labels", "Updated_at", "Type", "In_story"
     })
 
 for issue in issues:
@@ -32,8 +32,23 @@ for issue in issues:
     try:
         issue_dataframe.at[issue['number'], 'Type'] = issue['labels'][0]['name']
     except:
-        issue_dataframe.at[issue['number'], 'Type'] = 'Task'
+        pass
     
+    body = issue['body']
+    
+    try:
+        if "TYPE:TASK" in body:
+            issue_dataframe.at[issue['number'], 'Type'] = 'Task'
+            issue_dataframe.at[issue['number'], 'In_story'] = (
+                body[body.find("EPIC:'") + 6 : body.find("'", body.find("EPIC:'") + 7)]
+            )
+        elif "TYPE:TEST" in body:
+            issue_dataframe.at[issue['number'], 'Type'] = 'Test'
+            issue_dataframe.at[issue['number'], 'In_story'] = (
+                body[body.find("EPIC:'") + 6 : body.find("'", body.find("EPIC:'") + 7)]
+            )
+    except:
+        pass
 
 
 issue_dataframe[[
@@ -41,6 +56,7 @@ issue_dataframe[[
         "Title",
         "Body",
         "Type",
+        "In_story",
         "Comments",
         "State",
         "Updated_at",
